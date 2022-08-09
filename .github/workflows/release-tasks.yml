@@ -35,6 +35,9 @@ jobs:
     - name: Checkout LLVM
       uses: actions/checkout@v3
 
+    - name: Fetch Tag
+      run: git fetch origin refs/tags/${{ github.ref_name }}:refs/tags/${{ github.ref_name }}
+
     - name: Validate Tag Signature
       run: |
         git verify-tag refs/tags/${{ github.ref_name }}
