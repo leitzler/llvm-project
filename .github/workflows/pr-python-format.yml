@@ -1,17 +1,16 @@
-name: "Check Python file formatting"
+name: "Check Python Formatting"
 on:
-  pull_request:
-    # run on .py and .lit.cfg files
+  pull_request_target:
+    # run on .py
     paths:
       - '**.py'
-      - '**/lit.cfg'
 
 jobs:
   python_formatting:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch LLVM sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
           fetch-depth: 2
@@ -20,12 +19,11 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v39
         with:
-          files: |
-            **/*.py
-            **/lit.cfg
+          files: '**/*.py'
 
-      - name: echo
+      - name: "Listed files"
         run: |
+          echo "Formatting files:"
           echo "${{ steps.changed-files.outputs.all_changed_files }}"
 
       - name: Setup Python env
@@ -38,4 +36,5 @@ jobs:
         with:
           options: "--check --diff --color"
           version: "~=1.7.2"
+          revision: "${{ github.base_ref }}..."
           src: "${{ steps.changed-files.outputs.all_changed_files }}"
