@@ -32,3 +32,4 @@ jobs:
         with:
           options: "--check --diff --color"
           version: "~=1.7.2"
+          src: "${{ steps.changed-files.outputs.all_changed_files }}"
