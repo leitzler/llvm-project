@@ -24,6 +24,10 @@ jobs:
             '**/*.py'
             '**/lit.cfg'
 
+      - name: echo
+        run: |
+          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+
       - name: Setup Python env
         uses: actions/setup-python@v4
         with:
