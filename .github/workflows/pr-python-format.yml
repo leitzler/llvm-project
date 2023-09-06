@@ -4,7 +4,7 @@ on:
     # run on .py and .lit.cfg files
     paths:
       - '**.py'
-      - '**.lit.cfg'
+      - '**/lit.cfg'
 
 jobs:
   python_formatting:
@@ -20,7 +20,7 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v39
         with:
-          files: '**/*.{py,lit.cfg}'
+          files: '**/{*.py,lit.cfg}'
 
       - name: Setup Python env
         uses: actions/setup-python@v4
