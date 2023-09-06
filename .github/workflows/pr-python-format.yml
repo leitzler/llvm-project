@@ -21,8 +21,8 @@ jobs:
         uses: tj-actions/changed-files@v39
         with:
           files: |
-            '**/*.py'
-            '**/lit.cfg'
+            **/*.py
+            **/lit.cfg
 
       - name: echo
         run: |
