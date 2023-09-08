@@ -39,4 +39,4 @@ jobs:
 
       - name: Run clang-format
         run: |
-          git diff -U0 --no-color --relative ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} | python /usr/share/clang/clang-format-16/clang-format-diff.py -p1
+          git-clang-format --diff ${{ github.event.pull_request.base.sha }} ${{ steps.changed-files.outputs.all_changed_files }}
