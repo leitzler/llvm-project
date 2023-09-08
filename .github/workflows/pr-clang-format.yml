@@ -37,7 +37,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Test
+      - name: Run clang-format
         run: |
-          clang-format --version
-          git-clang-format --version
+          git-clang-format --diff ${{ github.event.pull_request_target.base.sha }}...${{ github.event.pull_request_target.head.sha }}
