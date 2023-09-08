@@ -28,7 +28,7 @@ jobs:
           echo "${{ steps.changed-files.outputs.all_changed_files }}"
 
       - name: Install clang-format
-        uses: aminya/setup-cpp@v
+        uses: aminya/setup-cpp@v1
         with:
           clangformat: 16.0.6
 
