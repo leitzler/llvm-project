@@ -34,4 +34,4 @@ jobs:
 
       - name: Run clang-format
         run: |
-          /usr/lib/llvm-16/bin/git-clang-format --diff ${{ github.event.pull_request.base.sha }} -- ${{ steps.changed-files.outputs.all_changed_files }}
+          /usr/lib/llvm-16/bin/git-clang-format-16 --diff ${{ github.event.pull_request.base.sha }} -- ${{ steps.changed-files.outputs.all_changed_files }}
