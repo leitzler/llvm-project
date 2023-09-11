@@ -15,12 +15,7 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v39
         with:
-          files: |
-            '**/*.c'
-            '**/*.cpp'
-            '**/*.h'
-            '**/*.cxx'
-            '**/*.hpp'
+          files: '**/*.{c,cxx,h,hxx,hpp,cpp}'
 
       - name: "Listed files"
         run: |
