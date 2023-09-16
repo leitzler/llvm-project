@@ -39,13 +39,12 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           set -o pipefail
-          /usr/lib/llvm-16/bin/git-clang-format --diff ${{ github.event.pull_request.base.sha }} -- ${{ steps.changed-files.outputs.all_changed_files }} \
-            | tee ${{ github.workspace }}/clang_format.patch
+          unbuffer /usr/lib/llvm-16/bin/git-clang-format --diff ${{ github.event.pull_request.base.sha }} -- ${{ steps.changed-files.outputs.all_changed_files }}
 
-      - name: Upload clang-format diff
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: clang_format.patch
-          path: ${{ github.workspace }}/clang-format.patch
+      #- name: Upload clang-format diff
+      #  if: ${{ failure() }}
+      #  uses: actions/upload-artifact@v3
+      #  with:
+      #    name: clang_format.patch
+      #    path: ${{ github.workspace }}/clang-format.patch
 
