@@ -45,12 +45,25 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           set -o pipefail
+          echo "clang-format on your changes failed. Run git-clang-format in your branch and update your PR.\n<details><summary>clang-format failure</summary>\n" > ${{ github.workspace }}/clang-format.patch
           /usr/lib/llvm-16/bin/git-clang-format --diff ${{ github.event.pull_request.base.sha }} -- ${{ steps.changed-files.outputs.all_changed_files }} \
-            | tee ${{ github.workspace }}/clang-format.patch
+            | tee -a ${{ github.workspace }}/clang-format.patch
             | batcat -p --color=always
+          echo "\n<details>\n" >> ${{ github.workspace }}/clang-format.patch
 
       - name: Comment on the PR if we failed
-        if:
+        if: ${{ failure() }}
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: ${{ github.workspace }}/clang-format.patch
+          comment_tag: clang_format_fail
+
+      - name: Remove PR comment if clang-format works
+        if: ${{ !failure() }}
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          comment_tag: clang_format_fail
+          mode: delete
 
       #- name: Upload clang-format diff
       #  if: ${{ failure() }}
