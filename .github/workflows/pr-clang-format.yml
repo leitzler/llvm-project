@@ -49,7 +49,7 @@ jobs:
 
           echo "" >> ${{ github.workspace }}/clang-format.patch
           echo "\`\`\`" >> ${{ github.workspace }}/clang-format.patch
-          echo "<details>" >> ${{ github.workspace }}/clang-format.patch
+          echo "</details>" >> ${{ github.workspace }}/clang-format.patch
           echo "" >> ${{ github.workspace }}/clang-format.patch
 
       - name: Comment on the PR if we failed
