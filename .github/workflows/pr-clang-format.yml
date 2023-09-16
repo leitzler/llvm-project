@@ -29,9 +29,9 @@ jobs:
         with:
           clangformat: 16.0.6
 
-      - name: Install unbuffer
+      - name: Install bat to color output
         run: |
-          sudo apt install expect-dev bat
+          sudo apt install bat
 
       - name: Setup Python env
         uses: actions/setup-python@v4
@@ -43,7 +43,7 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           set -o pipefail
-          unbuffer /usr/lib/llvm-16/bin/git-clang-format --diff ${{ github.event.pull_request.base.sha }} -- ${{ steps.changed-files.outputs.all_changed_files }}
+          unbuffer /usr/lib/llvm-16/bin/git-clang-format --diff ${{ github.event.pull_request.base.sha }} -- ${{ steps.changed-files.outputs.all_changed_files }} | bat -p --color=always
 
       #- name: Upload clang-format diff
       #  if: ${{ failure() }}
