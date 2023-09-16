@@ -1,5 +1,7 @@
 name: "Run clang-format"
 on: pull_request
+permissions:
+  pull-requests: write
 
 jobs:
   clang_format:
@@ -43,7 +45,12 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           set -o pipefail
-          /usr/lib/llvm-16/bin/git-clang-format --diff ${{ github.event.pull_request.base.sha }} -- ${{ steps.changed-files.outputs.all_changed_files }} | batcat -p --color=always
+          /usr/lib/llvm-16/bin/git-clang-format --diff ${{ github.event.pull_request.base.sha }} -- ${{ steps.changed-files.outputs.all_changed_files }} \
+            | tee ${{ github.workspace }}/clang-format.patch
+            | batcat -p --color=always
+
+      - name: Comment on the PR if we failed
+        if:
 
       #- name: Upload clang-format diff
       #  if: ${{ failure() }}
