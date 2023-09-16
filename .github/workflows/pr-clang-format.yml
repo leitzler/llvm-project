@@ -16,6 +16,7 @@ jobs:
         uses: tj-actions/changed-files@v39
         with:
           files: '**/*.{c,cxx,h,hxx,hpp,cpp}'
+          # files_ignore: subdir/**
 
       - name: "Listed files"
         run: |
@@ -24,14 +25,27 @@ jobs:
 
       - name: Install clang-format
         uses: aminya/setup-cpp@v1
+        if: steps.changed-files.outputs.any_changed == 'true'
         with:
           clangformat: 16.0.6
 
       - name: Setup Python env
         uses: actions/setup-python@v4
+        if: steps.changed-files.outputs.any_changed == 'true'
         with:
           python-version: '3.11'
 
       - name: Run clang-format
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: |
-          /usr/lib/llvm-16/bin/git-clang-format-16 --diff ${{ github.event.pull_request.base.sha }} -- ${{ steps.changed-files.outputs.all_changed_files }}
+          set -o pipefail
+          /usr/lib/llvm-16/bin/git-clang-format-16 --diff ${{ github.event.pull_request.base.sha }} -- ${{ steps.changed-files.outputs.all_changed_files }} \
+            | tee ${{ github.workspace }}/clang_format.patch
+
+      - name: Upload clang-format diff
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: clang_format.patch
+          path: ${{ github.workspace }}/clang-format.patch
+
