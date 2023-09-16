@@ -47,8 +47,10 @@ jobs:
 
           /usr/lib/llvm-16/bin/git-clang-format --diff ${{ github.event.pull_request.base.sha }} -- ${{ steps.changed-files.outputs.all_changed_files }} >> ${{ github.workspace }}/clang-format.patch
 
+          echo "" >> ${{ github.workspace }}/clang-format.patch
           echo "\`\`\`" >> ${{ github.workspace }}/clang-format.patch
           echo "<details>" >> ${{ github.workspace }}/clang-format.patch
+          echo "" >> ${{ github.workspace }}/clang-format.patch
 
       - name: Comment on the PR if we failed
         if: ${{ failure() }}
