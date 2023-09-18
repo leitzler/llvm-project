@@ -19,7 +19,7 @@ import sys
 import time
 from typing import List, Optional
 
-foo="bar"
+foo = "bar"
 
 beginner_comment = """
 Hi!
