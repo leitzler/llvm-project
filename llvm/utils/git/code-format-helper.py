@@ -11,10 +11,11 @@
 import argparse
 import os
 import subprocess
+import sys
 from functools import cached_property
 
 import github
-from github import PullRequest, IssueComment
+from github import IssueComment, PullRequest
 
 
 class FormatHelper:
@@ -32,7 +33,7 @@ class FormatHelper:
         return f"""
 {self.comment_tag}
 
-:warning: {self.friendly_name}, {self.name} failed to run on your code. :warning:
+:warning: {self.friendly_name}, {self.name} found issues in your code. :warning:
 
 <details>
 <summary>
@@ -94,8 +95,10 @@ View the diff from {self.name} here.
         diff = self.format_run(changed_files, args)
         if diff:
             self.update_pr(diff, args)
+            return False
         else:
             self.update_pr_success(args)
+            return True
 
 
 class ClangFormatHelper(FormatHelper):
@@ -225,5 +228,9 @@ if __name__ == "__main__":
     if args.changed_files:
         changed_files = args.changed_files.split(",")
 
+    exit_code = 0
     for fmt in ALL_FORMATTERS:
-        fmt.run(changed_files, args)
+        if not fmt.run(changed_files, args):
+            exit_code = 1
+
+    sys.exit(exit_code)
