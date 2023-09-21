@@ -4,10 +4,12 @@ permissions:
   contents: read
 
 on:
-  push:
-    tags:
+  workflow_dispatch
+#  push:
+
+#    tags:
       # The regex support here is limited, so just match everything that starts with llvmorg- and filter later.
-      - 'llvmorg-*'
+#      - 'llvmorg-*'
 
 jobs:
   release-tasks:
@@ -15,27 +17,23 @@ jobs:
       contents: write # To upload assets to release.
     runs-on: ubuntu-latest
     if: github.repository == 'llvm/llvm-project'
+    outputs:
+      release-version: ${{ steps.validate-tag.outputs.release-version }}
     steps:
       - name: Validate Tag
         id: validate-tag
         run: |
-          test "${{ github.actor }}" = "tstellar" || test "${{ github.actor }}" = "tru"
-          echo "${{ github.ref_name }}" | grep -e '^llvmorg-[0-9]\+\.[0-9]\+\.[0-9]\+\(-rc[0-9]\+\)\?$'
-          release_version=$(echo "${{ github.ref_name }}" | sed 's/llvmorg-//g')
-          echo "release-version=$release_version" >> "$GITHUB_OUTPUT"
+#          test "${{ github.actor }}" = "tstellar" || test "${{ github.actor }}" = "tru"
+#          echo "${{ github.ref_name }}" | grep -e '^llvmorg-[0-9]\+\.[0-9]\+\.[0-9]\+\(-rc[0-9]\+\)\?$'
+#          release_version=$(echo "${{ github.ref_name }}" | sed 's/llvmorg-//g')
+          echo "release-version=17.0.2" >> "$GITHUB_OUTPUT"
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-              doxygen \
-              graphviz \
               python3-github \
-              python3-recommonmark \
-              python3-sphinx \
-              ninja-build \
-              texlive-font-utils
-          pip3 install --user sphinx-markdown-tables
+              ninja-build
 
       - name: Checkout LLVM
         uses: actions/checkout@v4
@@ -44,37 +42,36 @@ jobs:
         run: |
           ./llvm/utils/release/./github-upload-release.py --token ${{ github.token }} --release ${{ steps.validate-tag.outputs.release-version }} create
 
+  release-docs:
+    needs: release-tasks
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+              ninja-build
+
+      - name: Setup Python env
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: |
+          pip install sphinx myst-parser sphinx-automodapi furo
+
       - name: Build Documentation
         run: |
-          ./llvm/utils/release/build-docs.sh -release ${{ steps.validate-tag.outputs.release-version }}
-          ./llvm/utils/release/github-upload-release.py --token ${{ github.token }} --release ${{ steps.validate-tag.outputs.release-version }} upload --files ./*doxygen*.tar.xz
+          ./llvm/utils/release/build-docs.sh -release ${{ needs.release-tasks.outputs.release-version }} -no-doxygen
 
       - name: Create Release Notes Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: release-notes
           path: docs-build/html-export/
-
-      - name: Clone www-releases
-        if: ${{ !contains(steps.validate-tag.outputs.release-version, 'rc') }}
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository_owner }}/www-releases
-          ref: main
-          fetch-depth: 0
-          path: www-releases
-
-      - name: Upload Release Notes
-        if: ${{ !contains(steps.validate-tag.outputs.release-version, 'rc') }}
-        run: |
-          mkdir -p ../www-releases/${{ steps.validate-tag.outputs.release-version }}
-          mv ./docs-build/html-export/* ../www-releases/${{ steps.validate-tag.outputs.release-version }}
-          cd ../www-releases
-          git add ${{ steps.validate-tag.outputs.release-version }}
-          git config user.email "llvmbot@llvm.org"
-          git config user.name "llvmbot"
-          git commit -a -m "Add ${{ steps.validate-tag.outputs.release-version }} documentation"
-          git push https://${{ secrets.WWW_RELEASES_TOKEN }}@github.com/${{ github.repository_owner }}/www-releases main:main
 
   release-lit:
     runs-on: ubuntu-latest
