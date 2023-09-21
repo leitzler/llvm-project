@@ -13,8 +13,6 @@ on:
 
 jobs:
   release-tasks:
-    permissions:
-      contents: write # To upload assets to release.
     runs-on: ubuntu-latest
     outputs:
       release-version: ${{ steps.validate-tag.outputs.release-version }}
@@ -23,12 +21,6 @@ jobs:
         id: validate-tag
         run: |
           echo "release-version=17.0.2" >> "$GITHUB_OUTPUT"
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-              ninja-build
 
       - name: Setup Python env
         uses: actions/setup-python@v4
@@ -44,8 +36,6 @@ jobs:
 
   release-docs:
     needs: release-tasks
-    permissions:
-      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Install Dependencies
@@ -68,7 +58,7 @@ jobs:
 
       - name: Build Documentation
         run: |
-          ./llvm/utils/release/build-docs.sh -release ${{ needs.release-tasks.outputs.release-version }} -no-doxygen
+          ./llvm/utils/release/build-docs.sh -no-doxygen
 
       - name: Create Release Notes Artifact
         uses: actions/upload-artifact@v3
