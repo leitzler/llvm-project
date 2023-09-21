@@ -67,6 +67,8 @@ jobs:
       - name: Build Documentation
         env:
           LDFLAGS: -fuse-ld=lld
+          CMAKE_C_COMPILER_LAUNCHER: sccache
+          CMAKE_CXX_COMPILER_LAUNCHER: sccache
         run: |
           ./llvm/utils/release/build-docs.sh -no-doxygen
 
@@ -76,15 +78,82 @@ jobs:
           name: release-notes
           path: docs-build/html-export/
 
-  release-lit:
+  release-doxygen:
+    needs: release-tasks
     runs-on: ubuntu-latest
-    if: github.repository == 'llvm/llvm-project'
     steps:
+      - name: Setup clang toolchain
+        uses: aminya/setup-cpp@v1
+        with:
+          compiler: llvm-16.0.6
+          cmake: true
+          ninja: true
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          max-size: 500M
+          key: sccache-${{ matrix.os }}
+          variant: sccache
+
+      - name: Install dependencies
+        run: sudo apt-get install -y doxygen graphviz texlive-font-utils
+
       - name: Checkout LLVM
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: sudo apt-get install -y python3-setuptools
+      - name: Setup Python env
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: |
+          pip install sphinx recommonmark sphinx-automodapi furo sphinx-markdown-tables
+
+      - name: Build Documentation (Doxygen)
+        env:
+          LDFLAGS: -fuse-ld=lld
+          CMAKE_C_COMPILER_LAUNCHER: sccache
+          CMAKE_CXX_COMPILER_LAUNCHER: sccache
+        run: |
+          ./llvm/utils/release/build-docs.sh
+#          ./llvm/utils/release/github-upload-release.py --token ${{ github.token }} --release ${{ steps.validate-tag.outputs.release-version }} upload --files ./*doxygen*.tar.xz
+
+  release-lit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup clang toolchain
+        uses: aminya/setup-cpp@v1
+        with:
+          compiler: llvm-16.0.6
+          cmake: true
+          ninja: true
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          max-size: 500M
+          key: sccache-${{ matrix.os }}
+          variant: sccache
+
+      - name: Checkout LLVM
+        uses: actions/checkout@v4
+
+      - name: Setup Python env
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: |
+          pip install setuptools
+
+      - name: Build and Test
+        uses: llvm/actions/build-test-llvm-project@main
+        with:
+          cmake_args: '-GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache'
+          build_target: 'FileCheck'
 
       - name: Test lit
         run: |
