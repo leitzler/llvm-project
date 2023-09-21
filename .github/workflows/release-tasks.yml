@@ -41,9 +41,16 @@ jobs:
       - name: Setup clang toolchain
         uses: aminya/setup-cpp@v1
         with:
-          compiler: llvm
+          compiler: llvm-16.0.6
           cmake: true
           ninja: true
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          max-size: 500M
+          key: sccache-${{ matrix.os }}
+          variant: sccache
 
       - name: Checkout LLVM
         uses: actions/checkout@v4
@@ -55,12 +62,10 @@ jobs:
 
       - name: Install Python deps
         run: |
-          pip install sphinx recommonmark sphinx-automodapi furo
+          pip install sphinx recommonmark sphinx-automodapi furo sphinx-markdown-tables
 
       - name: Build Documentation
         env:
-          CC: clang
-          CXX: clang++
           LDFLAGS: -fuse-ld=lld
         run: |
           ./llvm/utils/release/build-docs.sh -no-doxygen
