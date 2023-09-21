@@ -38,11 +38,12 @@ jobs:
     needs: release-tasks
     runs-on: ubuntu-latest
     steps:
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-              ninja-build
+      - name: Setup clang toolchain
+        uses: aminya/setup-cpp@v1
+        with:
+          compiler: llvm
+          cmake: true
+          ninja: true
 
       - name: Checkout LLVM
         uses: actions/checkout@v4
@@ -54,9 +55,13 @@ jobs:
 
       - name: Install Python deps
         run: |
-          pip install sphinx myst-parser sphinx-automodapi furo
+          pip install sphinx recommonmark sphinx-automodapi furo
 
       - name: Build Documentation
+        env:
+          CC: clang
+          CXX: clang++
+          LDFLAGS: -fuse-ld=lld
         run: |
           ./llvm/utils/release/build-docs.sh -no-doxygen
 
