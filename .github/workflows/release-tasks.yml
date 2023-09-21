@@ -28,11 +28,19 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-              python3-github \
               ninja-build
 
-      - name: Checkout LLVM
-        uses: actions/checkout@v4
+      - name: Setup Python env
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Setup Automation Script
+        run: |
+          curl -O -L https://raw.githubusercontent.com/"$GITHUB_REPOSITORY"/main/llvm/utils/git/github-automation.py
+          curl -O -L https://raw.githubusercontent.com/"$GITHUB_REPOSITORY"/main/llvm/utils/git/requirements.txt
+          chmod a+x github-automation.py
+          pip install -r requirements.txt
 
   release-docs:
     needs: release-tasks
@@ -45,6 +53,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
               ninja-build
+
+      - name: Checkout LLVM
+        uses: actions/checkout@v4
 
       - name: Setup Python env
         uses: actions/setup-python@v4
