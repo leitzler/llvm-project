@@ -1,6 +1,6 @@
 # The LLVM Compiler Infrastructure
 
-Welcome to the LLVM project!
+Welcome to the LLVM project! toot!
 
 This repository contains the source code for LLVM, a toolkit for the
 construction of highly optimized compilers, optimizers, and run-time
